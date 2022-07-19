@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"os"
 	"time"
+
 	"github.com/amitbet/vncproxy/common"
 	"github.com/amitbet/vncproxy/logger"
 	"github.com/amitbet/vncproxy/server"
@@ -21,6 +22,7 @@ type Recorder struct {
 	sessionStartWritten bool
 	segmentChan         chan *common.RfbSegment
 	maxWriteSize        int
+	Run                 bool
 }
 
 func getNowMillisec() int {
@@ -47,7 +49,7 @@ func NewRecorder(saveFilePath string) (*Recorder, error) {
 	//buffer the channel so we don't halt the proxying flow for slow writes when under pressure
 	rec.segmentChan = make(chan *common.RfbSegment, 100)
 	go func() {
-		for {
+		for rec.Run {
 			data := <-rec.segmentChan
 			rec.HandleRfbSegment(data)
 		}
